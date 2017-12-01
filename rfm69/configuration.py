@@ -146,7 +146,7 @@ class RFM69Configuration(object):
         self.rx_timeout_1 = 0
         self.rx_timeout_2 = 40
 
-        self.sync_config = SYNC_RLDA
+        self.sync_config = RF.SYNC_RLDA
         self.sync_value_1 = (0x0101>>8)
         self.sync_value_2 = 0x0101
         self.sync_value_3 = 0
