@@ -92,7 +92,8 @@ class RFM69(object):
         self.log.debug("%s configuration registers written.", count)
 
     def set_node_n_brdcast(self, node, broadcast):
-        pass
+        print("sumfuck")
+        #pass
 
     def wait_for_packet(self, timeout=None):
         """ Put the module in receive mode, and block until we receive a packet.
@@ -160,7 +161,7 @@ class RFM69(object):
         if self.config.packet_config_1.variable_length:
             self.log.debug("Adding data legth byte")
             data = [len(data)] + list(data)
-        
+
         self.log.debug("Initialising Tx...")
         start = time()
         self.set_mode(OpMode.TX, wait=False)
@@ -170,7 +171,7 @@ class RFM69(object):
 
         if preamble:
             sleep(preamble)
-            
+
         self.write_fifo(data)
         wait_for(lambda: self.read_register(IRQFlags2).packet_sent)
 
@@ -278,4 +279,3 @@ class RFM69(object):
     def write_fifo(self, data):
         self.log.debug("Data is %s", data)
         self.spi.xfer2([Register.FIFO | 0x80] + data)
-    
