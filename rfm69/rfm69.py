@@ -152,11 +152,12 @@ class RFM69(object):
                     preambles may result in more reliable decoding, at the expense of
                     spectrum use.
         """
-        data = bytearray(data)
+        data = list(bytearray(data))
 
         if self.config.packet_config_1.variable_length:
+            self.log.debug("Adding data legth byte")
             data = [len(data)] + list(data)
-
+        
         self.log.debug("Initialising Tx...")
         start = time()
         self.set_mode(OpMode.TX, wait=False)
@@ -166,7 +167,7 @@ class RFM69(object):
 
         if preamble:
             sleep(preamble)
-
+            
         self.write_fifo(data)
         wait_for(lambda: self.read_register(IRQFlags2).packet_sent)
 
@@ -272,4 +273,6 @@ class RFM69(object):
         self.spi.xfer2(data)
 
     def write_fifo(self, data):
+        self.log.debug("Data is %s", data)
         self.spi.xfer2([Register.FIFO | 0x80] + data)
+    
