@@ -91,6 +91,9 @@ class RFM69(object):
 
         self.log.debug("%s configuration registers written.", count)
 
+    def set_node_n_brdcast(self, node, broadcast):
+        pass
+
     def wait_for_packet(self, timeout=None):
         """ Put the module in receive mode, and block until we receive a packet.
             Returns a tuple of (packet, rssi), or None if there was a timeout
