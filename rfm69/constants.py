@@ -684,6 +684,7 @@ class RF(Enum):
     # Reg Lna
     LNA_ZIN_50                               = 0x00
     LNA_ZIN_200                              = 0x80 # Default
+    LNA_ZIN_RLDA                             = 0x88 #RLDA CONF
 
     LNA_LOWPOWER_OFF                         = 0x00 # Default
     LNA_LOWPOWER_ON                          = 0x40
@@ -881,6 +882,8 @@ class RF(Enum):
     # Reg Sync Config
     SYNC_ON                                  = 0x80 # Default
     SYNC_OFF                                 = 0x00
+    #RLDA SYNC
+    SYNC_RLDA                                = 0x88 #RLDA sync
 
     SYNC_FIFOFILL_AUTO                       = 0x00 # Default -- when sync interrupt occurs
     SYNC_FIFOFILL_MANUAL                     = 0x40

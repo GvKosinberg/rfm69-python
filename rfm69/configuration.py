@@ -87,11 +87,11 @@ class PacketConfig1(RegisterValue):
     DCFreeWhitening     = 0b10
 
     def __init__(self):
-        self.variable_length = False
+        self.variable_length = True
         self.dc_free = self.DCFreeOff
         self.crc = True
         self.crc_auto_clear_off = False
-        self.address_filtering = 0b00
+        self.address_filtering = 0b10
 
 
 class Temperature1(RegisterValue):
@@ -119,31 +119,36 @@ class RFM69Configuration(object):
         self.fdev_msb = RF.FDEVMSB_5000
         self.fdev_lsb = RF.FDEVLSB_5000
 
-        self.frf_msb = RF.FRFMSB_915
-        self.frf_mid = RF.FRFMID_915
-        self.frf_lsb = RF.FRFLSB_915
+        # self.frf_msb = RF.FRFMSB_915
+        # self.frf_mid = RF.FRFMID_915
+        # self.frf_lsb = RF.FRFLSB_915
+        #CUSTOM RLDA FREQ
+        self.frf_msb = 0x6C
+        self.frf_mid = 0x48
+        self.frf_lsb = 0x0F
 
         self.afc_ctl = RF.AFCLOWBETA_OFF
 
-        self.pa_level = RF.PALEVEL_PA0_ON | RF.PALEVEL_PA1_OFF | RF.PALEVEL_PA2_OFF | 0x18
+        #self.pa_level = RF.PALEVEL_PA0_ON | RF.PALEVEL_PA1_OFF | RF.PALEVEL_PA2_OFF | 0x18
+        self.pa_level = (0x40 | (28))
         self.pa_ramp = RF.PARAMP_40
 
         self.ocp = RF.OCP_ON | RF.OCP_TRIM_95
-        self.lna = RF.LNA_ZIN_200
+        self.lna = RF.LNA_ZIN_RLDA
         self.rx_bw = RF.RXBW_DCCFREQ_010 | RF.RXBW_MANT_24 | RF.RXBW_EXP_5
         self.afc_fei = RF.AFCFEI_AFCAUTO_OFF | RF.AFCFEI_AFCAUTOCLEAR_OFF
 
         self.dio_mapping_1 = RF.DIOMAPPING1_DIO0_01
         self.dio_mapping_2 = RF.DIOMAPPING2_CLKOUT_OFF
 
-        self.rssi_threshold = 200
+        self.rssi_threshold = -114 #XXX:prepare to fix
 
         self.rx_timeout_1 = 0
         self.rx_timeout_2 = 40
 
-        self.sync_config = RF.SYNC_ON | RF.SYNC_FIFOFILL_AUTO | RF.SYNC_SIZE_4 | RF.SYNC_TOL_0
-        self.sync_value_1 = 0
-        self.sync_value_2 = 0
+        self.sync_config = SYNC_RLDA
+        self.sync_value_1 = (0x0101>>8)
+        self.sync_value_2 = 0x0101
         self.sync_value_3 = 0
         self.sync_value_4 = 0
         self.sync_value_5 = 0
@@ -155,9 +160,12 @@ class RFM69Configuration(object):
         self.payload_length = 0x40
 
         self.fifo_threshold = RF.FIFOTHRESH_TXSTART_FIFONOTEMPTY | RF.FIFOTHRESH_VALUE
-        self.packet_config_2 = RF.PACKET2_RXRESTARTDELAY_2BITS | RF.PACKET2_AUTORXRESTART_ON | RF.PACKET2_AES_OFF
+        self.packet_config_2 = 0x02 #RLDA
         self.test_dagc = RF.DAGC_IMPROVED_LOWBETA0
         self.test_afc = 0x0e
+
+        #test afc bw
+        self.afc_bw = 0x8b
 
     def get_registers(self):
         regs = OrderedDict()
@@ -197,5 +205,7 @@ class RFM69Configuration(object):
         regs[Register.PACKETCONFIG2] = self.packet_config_2
         regs[Register.TESTDAGC] = self.test_dagc
         regs[Register.TESTAFC]  = self.test_afc
+        #test afc bw
+        regs[Register.AFCBW] = self.afc_bw
         regs[255] = 0
         return regs
