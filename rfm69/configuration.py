@@ -113,11 +113,11 @@ class RFM69Configuration(object):
         self.opmode = OpMode()
         self.data_modulation = DataModulation()
 
-        self.bitrate_msb = RF.BITRATEMSB_4800
-        self.bitrate_lsb = RF.BITRATELSB_4800
+        self.bitrate_msb = RF.BITRATEMSB_9600
+        self.bitrate_lsb = RF.BITRATELSB_9600
 
-        self.fdev_msb = RF.FDEVMSB_5000
-        self.fdev_lsb = RF.FDEVLSB_5000
+        self.fdev_msb = 0x00
+        self.fdev_lsb = 0x76
 
         # self.frf_msb = RF.FRFMSB_915
         # self.frf_mid = RF.FRFMID_915
@@ -135,7 +135,7 @@ class RFM69Configuration(object):
 
         self.ocp = RF.OCP_ON | RF.OCP_TRIM_95
         self.lna = RF.LNA_ZIN_RLDA
-        self.rx_bw = RF.RXBW_DCCFREQ_010 | RF.RXBW_MANT_24 | RF.RXBW_EXP_5
+        self.rx_bw = 0x4D
         self.afc_fei = RF.AFCFEI_AFCAUTO_OFF | RF.AFCFEI_AFCAUTOCLEAR_OFF
 
         self.dio_mapping_1 = RF.DIOMAPPING1_DIO0_01
@@ -162,10 +162,10 @@ class RFM69Configuration(object):
         self.fifo_threshold = RF.FIFOTHRESH_TXSTART_FIFONOTEMPTY | RF.FIFOTHRESH_VALUE
         self.packet_config_2 = 0x02 #RLDA
         self.test_dagc = RF.DAGC_IMPROVED_LOWBETA0
-        self.test_afc = 0x0e
+        self.test_afc = 0x0E
 
         #test afc bw
-        self.afc_bw = 0x8b
+        self.afc_bw = 0x8C
 
     def get_registers(self):
         regs = OrderedDict()
