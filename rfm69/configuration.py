@@ -124,8 +124,8 @@ class RFM69Configuration(object):
         # self.frf_lsb = RF.FRFLSB_915
         #CUSTOM RLDA FREQ
         self.frf_msb = 0x6C
-        self.frf_mid = 0x48
-        self.frf_lsb = 0x0F
+        self.frf_mid = 0x5B
+        self.frf_lsb = 0x45
 
         self.afc_ctl = RF.AFCLOWBETA_OFF
 
