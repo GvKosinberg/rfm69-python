@@ -92,8 +92,8 @@ class PacketConfig1(RegisterValue):
         self.crc = True
         self.crc_auto_clear_off = False
         #123
-        self.address_filtering = 0b00
-        # self.address_filtering = 0b10
+        # self.address_filtering = 0b00
+        self.address_filtering = 0b10
 
 
 class Temperature1(RegisterValue):
