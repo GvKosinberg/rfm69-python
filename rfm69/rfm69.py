@@ -236,7 +236,7 @@ class RFM69(object):
         self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
 
         self.wrt_rdy.clear()
-        self.nd2
+        self.wrt_event.clear()
 
     def set_mode(self, mode, wait=True):
         """ Change the mode of the radio. Mode values can be found in the OpMode class.
