@@ -103,11 +103,15 @@ class RFM69(object):
         self.wrt_event = Event()
         self.wrt_event = wrt_event
         self.log.debug("Type of wrt e in rfm69 lib %s" % type(self.wrt_event))
+        self.log.debug("Val of wrt e in rfm69 lib %s" % self.wrt_event)
         self.rx_restarts = 0
         GPIO.add_event_detect(self.dio0_pin, GPIO.RISING, callback=self.payload_ready_interrupt)
         self.set_mode(OpMode.RX)
         packet_received = False
         while True:
+            if self.wrt_event.is_set():
+                self.log.info("Write event is set. Stop receiving.")
+                break
             irqflags = self.read_register(IRQFlags1)
             if not irqflags.mode_ready:
                 self.log.error("Module out of ready state: %s", irqflags)
@@ -124,9 +128,6 @@ class RFM69(object):
                                self.spi_read(Register.PACKETCONFIG2) | RF.PACKET2_RXRESTART)
                 self.rx_restarts += 1
             if timeout is not None and time() - start > timeout:
-                break
-            if self.wrt_event.is_set():
-                self.log.info("Write event is set. Stop receiving.")
                 break
             if self.packet_ready_event.wait(1):
                 packet_received = True
