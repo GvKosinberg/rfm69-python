@@ -110,7 +110,7 @@ class RFM69(object):
         while True:
             if self.wrt_event.is_set():
                 self.log.info("Write event is set. Stop receiving.")
-                break
+                return None
             irqflags = self.read_register(IRQFlags1)
             if not irqflags.mode_ready:
                 self.log.error("Module out of ready state: %s", irqflags)
