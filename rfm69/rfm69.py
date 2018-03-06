@@ -91,9 +91,56 @@ class RFM69(object):
 
         self.log.debug("%s configuration registers written.", count)
 
-    def set_node_n_brdcast(self, node, broadcast):
-        print("sumfuck")
-        #pass
+    def read_with_cb(self, wrt_event, timeout=None):
+        """ Put the module in receive mode, and block until we receive a packet.
+            Returns a tuple of (packet, rssi), or None if there was a timeout
+
+            timeout -- the amount of time to wait for before returning if no
+                       packets were received.
+        """
+        start = time()
+        self.packet_ready_event = Event()
+        self.rx_restarts = 0
+        GPIO.add_event_detect(self.dio0_pin, GPIO.RISING, callback=self.payload_ready_interrupt)
+        self.set_mode(OpMode.RX)
+        packet_received = False
+        while True:
+            irqflags = self.read_register(IRQFlags1)
+            if not irqflags.mode_ready:
+                self.log.error("Module out of ready state: %s", irqflags)
+                break
+            if irqflags.rx_ready and irqflags.timeout:
+                # Once the RFM's receiver has been started by a signal over the RSSI
+                # threshold, it will continue running (possibly with stale AGC/AFC
+                # parameters). Detect this and reset the receiver.
+                irqflags2 = self.read_register(IRQFlags2)
+                # self.log.debug("Restarting Rx on timeout. RSSI: %s, sync: %s, fifo_not_empty: %s, crc: %s",
+                #                irqflags.rssi, irqflags.sync_address_match, irqflags2.fifo_not_empty,
+                #                irqflags2.crc_ok)
+                self.spi_write(Register.PACKETCONFIG2,
+                               self.spi_read(Register.PACKETCONFIG2) | RF.PACKET2_RXRESTART)
+                self.rx_restarts += 1
+            if timeout is not None and time() - start > timeout:
+                break
+            if wrt_event.is_set():
+                break
+            if self.packet_ready_event.wait(1):
+                packet_received = True
+                break
+
+        GPIO.remove_event_detect(self.dio0_pin)
+        self.set_mode(OpMode.Standby, wait=False)
+
+        if packet_received:
+            rssi = self.get_rssi()
+            data_length = self.spi_read(Register.FIFO)
+            data = self.spi_burst_read(Register.FIFO, data_length)
+
+            self.log.info("Received message: %s, RSSI: %s", data, rssi)
+            return (bytearray(data), rssi)
+        else:
+            return None
+
 
     def wait_for_packet(self, timeout=None):
         """ Put the module in receive mode, and block until we receive a packet.
