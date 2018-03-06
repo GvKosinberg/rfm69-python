@@ -108,6 +108,9 @@ class RFM69(object):
             GPIO.add_event_detect(self.dio0_pin, GPIO.RISING, callback=self.payload_ready_interrupt)
             self.set_mode(OpMode.RX)
             packet_received = False
+        else:
+            GPIO.remove_event_detect(self.dio0_pin)
+            
         while True:
             if self.wrt_event.is_set():
                 self.log.info("Write event is set. Stop receiving.")
