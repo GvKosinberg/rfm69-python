@@ -100,6 +100,7 @@ class RFM69(object):
         """
         start = time()
         self.packet_ready_event = Event()
+        self.wrt_event = Event()
         self.wrt_event = wrt_event
         self.log.debug("Type of wrt e in rfm69 lib %s" % type(self.wrt_event))
         self.rx_restarts = 0
