@@ -53,6 +53,10 @@ class RFM69(object):
         self.write_config()
         self.log.info("Initialised successfully")
 
+        ##==========##
+        self.wrt_event = Event()
+        self.wrt_rdy = Event()
+
     def init_gpio(self):
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(False)
@@ -91,30 +95,26 @@ class RFM69(object):
 
         self.log.debug("%s configuration registers written.", count)
 
-    def read_with_cb(self, wrt_event, timeout=None):
-        """ Put the module in receive mode, and block until we receive a packet.
-            Returns a tuple of (packet, rssi), or None if there was a timeout
-
-            timeout -- the amount of time to wait for before returning if no
-                       packets were received.
+    def read_with_cb(self, timeout=None):
+        """
+            3378
         """
         start = time()
         self.packet_ready_event = Event()
-        self.wrt_event = Event()
-        self.wrt_event = wrt_event
 
-        if not self.wrt_event.is_set():
-            self.rx_restarts = 0
-            GPIO.add_event_detect(self.dio0_pin, GPIO.RISING, callback=self.payload_ready_interrupt)
-            self.set_mode(OpMode.RX)
-            packet_received = False
-        else:
-            GPIO.remove_event_detect(self.dio0_pin)
-            
+        self.rx_restarts = 0
+        GPIO.add_event_detect(self.dio0_pin, GPIO.RISING, callback=self.payload_ready_interrupt)
+        self.set_mode(OpMode.RX)
+        packet_received = False
+
         while True:
             if self.wrt_event.is_set():
                 self.log.info("Write event is set. Stop receiving.")
+                GPIO.remove_event_detect(self.dio0_pin)
+                self.set_mode(OpMode.Standby, wait=False)
+                self.wrt_rdy.set()
                 return None
+
             irqflags = self.read_register(IRQFlags1)
             if not irqflags.mode_ready:
                 self.log.error("Module out of ready state: %s", irqflags)
@@ -211,6 +211,8 @@ class RFM69(object):
                     preambles may result in more reliable decoding, at the expense of
                     spectrum use.
         """
+        self.wrt_rdy.wait()
+
         data = list(bytearray(data))
 
         if self.config.packet_config_1.variable_length:
@@ -232,6 +234,9 @@ class RFM69(object):
 
         self.set_mode(OpMode.Standby)
         self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
+
+        self.wrt_rdy.clear()
+        self.nd2
 
     def set_mode(self, mode, wait=True):
         """ Change the mode of the radio. Mode values can be found in the OpMode class.
