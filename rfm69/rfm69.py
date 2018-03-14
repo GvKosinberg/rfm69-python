@@ -56,6 +56,7 @@ class RFM69(object):
         ##==========##
         self.wrt_event = Event()
         self.wrt_rdy = Event()
+        self.read_rdy = Event()
 
     def init_gpio(self):
         GPIO.setmode(GPIO.BCM)
@@ -99,6 +100,7 @@ class RFM69(object):
         """
             3378
         """
+        self.read_rdy.wait()
         start = time()
         self.packet_ready_event = Event()
 
@@ -212,6 +214,7 @@ class RFM69(object):
                     spectrum use.
         """
         self.wrt_rdy.wait()
+        self.read_rdy.clear()
 
         data = list(bytearray(data))
 
@@ -234,6 +237,8 @@ class RFM69(object):
 
         self.set_mode(OpMode.Standby)
         self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
+
+        self.read_rdy.set()
 
     def set_mode(self, mode, wait=True):
         """ Change the mode of the radio. Mode values can be found in the OpMode class.
