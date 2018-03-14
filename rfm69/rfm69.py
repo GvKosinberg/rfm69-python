@@ -189,6 +189,8 @@ class RFM69(object):
         self.set_mode(OpMode.Standby)
         self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
 
+        self.wrt_event.clear()
+        self.wrt_rdy.clear()
         self.read_rdy.set()
 
     def wait_for_packet(self, timeout=None):
