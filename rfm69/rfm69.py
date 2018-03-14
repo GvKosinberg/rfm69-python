@@ -164,8 +164,8 @@ class RFM69(object):
                     preambles may result in more reliable decoding, at the expense of
                     spectrum use.
         """
-        self.wrt_rdy.wait()
         self.read_rdy.clear()
+        self.wrt_rdy.wait()
 
         data = list(bytearray(data))
 
