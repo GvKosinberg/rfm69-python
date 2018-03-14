@@ -151,6 +151,45 @@ class RFM69(object):
         else:
             return None
 
+    def send_packet(self, data, preamble=None):
+        """ Transmit a packet. If you've configured the RFM to use variable-length
+            packets, this function will add a length byte for you.
+
+            The radio will be returned to the standby state.
+
+            data -- this should be a bytearray. If it isn't, we'll try and convert it,
+                    but you might end up with encoding issues, especially if you use
+                    unicode strings.
+            preamble -- how long, in seconds, to send the preamble bytes for. Longer
+                    preambles may result in more reliable decoding, at the expense of
+                    spectrum use.
+        """
+        self.wrt_rdy.wait()
+        self.read_rdy.clear()
+
+        data = list(bytearray(data))
+
+        if self.config.packet_config_1.variable_length:
+            self.log.debug("Adding data legth byte")
+            data = [len(data)] + list(data)
+
+        self.log.debug("Initialising Tx...")
+        start = time()
+        self.set_mode(OpMode.TX, wait=False)
+        wait_for(lambda: self.read_register(IRQFlags1).tx_ready)
+
+        self.log.debug("In Tx mode (took %.3fs)", time() - start)
+
+        if preamble:
+            sleep(preamble)
+
+        self.write_fifo(data)
+        wait_for(lambda: self.read_register(IRQFlags2).packet_sent)
+
+        self.set_mode(OpMode.Standby)
+        self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
+
+        self.read_rdy.set()
 
     def wait_for_packet(self, timeout=None):
         """ Put the module in receive mode, and block until we receive a packet.
@@ -199,46 +238,6 @@ class RFM69(object):
             return (bytearray(data), rssi)
         else:
             return None
-
-    def send_packet(self, data, preamble=None):
-        """ Transmit a packet. If you've configured the RFM to use variable-length
-            packets, this function will add a length byte for you.
-
-            The radio will be returned to the standby state.
-
-            data -- this should be a bytearray. If it isn't, we'll try and convert it,
-                    but you might end up with encoding issues, especially if you use
-                    unicode strings.
-            preamble -- how long, in seconds, to send the preamble bytes for. Longer
-                    preambles may result in more reliable decoding, at the expense of
-                    spectrum use.
-        """
-        self.wrt_rdy.wait()
-        self.read_rdy.clear()
-
-        data = list(bytearray(data))
-
-        if self.config.packet_config_1.variable_length:
-            self.log.debug("Adding data legth byte")
-            data = [len(data)] + list(data)
-
-        self.log.debug("Initialising Tx...")
-        start = time()
-        self.set_mode(OpMode.TX, wait=False)
-        wait_for(lambda: self.read_register(IRQFlags1).tx_ready)
-
-        self.log.debug("In Tx mode (took %.3fs)", time() - start)
-
-        if preamble:
-            sleep(preamble)
-
-        self.write_fifo(data)
-        wait_for(lambda: self.read_register(IRQFlags2).packet_sent)
-
-        self.set_mode(OpMode.Standby)
-        self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
-
-        self.read_rdy.set()
 
     def set_mode(self, mode, wait=True):
         """ Change the mode of the radio. Mode values can be found in the OpMode class.
