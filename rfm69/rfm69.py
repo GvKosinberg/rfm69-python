@@ -110,6 +110,7 @@ class RFM69(object):
         packet_received = False
 
         while True:
+            self.read_rdy.wait()
             if self.wrt_event.is_set():
                 self.log.info("Write event is set. Stop receiving.")
                 break
