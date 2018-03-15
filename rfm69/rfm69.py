@@ -184,7 +184,10 @@ class RFM69(object):
             sleep(preamble)
 
         self.write_fifo(data)
-        wait_for(lambda: self.read_register(IRQFlags2).packet_sent)
+        try:
+            wait_for(lambda: self.read_register(IRQFlags2).packet_sent)
+        except RadioError:
+            log.error("Packet haven't been sent. Sorry")
 
         self.set_mode(OpMode.Standby)
         self.log.debug("Packet (%r) sent in %.3fs", data, time() - start)
