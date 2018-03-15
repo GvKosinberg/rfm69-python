@@ -112,10 +112,7 @@ class RFM69(object):
         while True:
             if self.wrt_event.is_set():
                 self.log.info("Write event is set. Stop receiving.")
-                GPIO.remove_event_detect(self.dio0_pin)
-                self.set_mode(OpMode.Standby, wait=False)
-                self.wrt_rdy.set()
-                return None
+                break
 
             irqflags = self.read_register(IRQFlags1)
             if not irqflags.mode_ready:
@@ -140,6 +137,8 @@ class RFM69(object):
 
         GPIO.remove_event_detect(self.dio0_pin)
         self.set_mode(OpMode.Standby, wait=False)
+        self.wrt_rdy.set()
+
 
         if packet_received:
             rssi = self.get_rssi()
